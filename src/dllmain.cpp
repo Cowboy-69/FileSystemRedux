@@ -29,8 +29,10 @@ public:
             files[fileID].open(filePathName, std::ios_base::app);
 
             if (!files[fileID].good()) {
-                Log("FileSystem.cleo: ERROR - Could not open file!");
-                return HandlerResult::ERR;
+                Log("FileSystem.cleo: WARNING - Could not open file! [OPEN_FILE]");
+
+                SetIntParam(ctx, -1);
+                return HandlerResult::CONTINUE;
             }
 
             bIsFileOpen = true;
@@ -39,21 +41,27 @@ public:
         }
 
         if (!bIsFileOpen) {
-            Log("FileSystem.cleo: ERROR - Could not open file!");
-            return HandlerResult::ERR;
+            Log("FileSystem.cleo: WARNING - Could not open file! [OPEN_FILE]");
+
+            SetIntParam(ctx, -1);
+            return HandlerResult::CONTINUE;
         }
 
         SetIntParam(ctx, fileID);
-
         return HandlerResult::CONTINUE;
     }
 
     static HandlerResult CloseFile(Context ctx) {
         int fileID = GetIntParam(ctx);
 
-        if (fileID < 0 || fileID >= MAX_FILES || !files[fileID].is_open()) {
-            Log("FileSystem.cleo: ERROR - This file does not exist!");
-            return HandlerResult::ERR;
+        if (fileID < 0 || fileID >= MAX_FILES) {
+            Log("FileSystem.cleo: WARNING - This file does not exist! [CLOSE_FILE]");
+            return HandlerResult::CONTINUE;
+        }
+
+        if (!files[fileID].is_open()) {
+            Log("FileSystem.cleo: WARNING - This file does not exist! [CLOSE_FILE]");
+            return HandlerResult::CONTINUE;
         }
 
         files[fileID].close();
@@ -64,9 +72,14 @@ public:
     static HandlerResult WriteStringToFile(Context ctx) {
         int fileID = GetIntParam(ctx);
 
-        if (fileID < 0 || fileID >= MAX_FILES || !files[fileID].is_open()) {
-            Log("FileSystem.cleo: ERROR - This file does not exist!");
-            return HandlerResult::ERR;
+        if (fileID < 0 || fileID >= MAX_FILES) {
+            Log("FileSystem.cleo: WARNING - This file does not exist! [WRITE_STRING_TO_FILE]");
+            return HandlerResult::CONTINUE;
+        }
+
+        if (!files[fileID].is_open()) {
+            Log("FileSystem.cleo: WARNING - This file does not exist! [WRITE_STRING_TO_FILE]");
+            return HandlerResult::CONTINUE;
         }
 
         char line[STR_MAX_LEN];
